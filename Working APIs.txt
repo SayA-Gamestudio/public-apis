@@ -1,0 +1,15 @@
+Working API examples
+
+https://http.cat/401
+
+https://api.ipify.org?format=json
+
+https://randomuser.me/api/
+
+https://dog.ceo/api/breeds/image/random
+
+https://php-noise.com/noise.php?hex=FFFFFF&json
+
+https://robohash.org/Hello
+
+https://www.amiiboapi.com/api/amiibo/?name=mario
