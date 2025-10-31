@@ -12,10 +12,8 @@ git clone https://github.com/SayA-Gamestudio/public-apis.git
 
 ## Usage
 Run the file, and enter the queries to use the free APIs.
-```python
-
-```
 
 ## License
+
 
 [MIT](https://choosealicense.com/licenses/mit/)
