@@ -13,3 +13,10 @@ https://php-noise.com/noise.php?hex=FFFFFF&json
 https://robohash.org/Hello
 
 https://www.amiiboapi.com/api/amiibo/?name=mario
+
+https://api.mojang.com/users/profiles/minecraft/notch
+
+https://crafatar.com/avatars/069a79f4-44e9-4726-a5be-fca90e38aaf5
+https://crafatar.com/renders/head/069a79f4-44e9-4726-a5be-fca90e38aaf5
+https://crafatar.com/renders/body/069a79f4-44e9-4726-a5be-fca90e38aaf5
+https://crafatar.com/skins/069a79f4-44e9-4726-a5be-fca90e38aaf5
