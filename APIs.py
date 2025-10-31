@@ -13,8 +13,6 @@ def get_cat_err_img(errcode):
     if r.status_code == 200:
         show_image(r.content)
 
-apis = ["error", "ip", "random user", "dog", "fox", "noise", "robot", "minecraft", "f2p"]
-
 class APIS():
     @staticmethod
     def test():
@@ -36,7 +34,25 @@ class APIS():
         r = requests.get(url)
         if r.status_code == 200:
             data = r.json()
-            return (f"Your IP address is {data["ip"]}")
+            ip = data["ip"]
+        else:
+            get_cat_err_img(r.status_code)
+            return r.status_code
+        
+        url = f"http://ip-api.com/json/{ip}?"
+        r = requests.get(url)
+        if r.status_code == 200:
+            data = r.json()
+            print(data)
+            country = data["country"]
+            city = data["city"]
+            zipcode = data["zip"]
+            lat = data["lat"]
+            lon = data["lon"]
+            organisation = data["org"]
+
+
+            return (f"Your IP address is {ip}.\nExtra info:\nLocation: {city}, {country} with ZIP-code {zipcode}.\nCoordinates: {lat}, {lon}.\nThe internet is owned by {organisation}")
         else:
             get_cat_err_img(r.status_code)
             return r.status_code
@@ -222,6 +238,97 @@ class APIS():
         if get_random:
             return choice(game_urls)
         return game_urls
+    
+    def get_qr(mode:str, qr_data:str):
+        if mode == "create":
+            url = f"https://api.qrserver.com/v1/create-qr-code/?size=150x150&data={qr_data}"
+            r = requests.get(url)
+            if r.status_code == 200:
+                return show_image(r.content)
+            else:
+                get_cat_err_img(r.status_code)
+                return r.status_code
+        elif mode == "read":
+            return "Read mode is not supported yet"
+        else:
+            return "Mode can be either create or read"
+    
+def random_user():
+    data = APIS.get_random_user()
+    print(data["Gender"])
+    print(data["Name"])
+    print(data["Date of birth"])
+    print(data["Age"])
+    print(data["Location"])
+
+def noise():
+    print("Leave any value empty for default")
+    rgb_input = input("RGB (e.g., 255,128,0) [default 255,255,255]: ").strip()
+    try:
+        rgb = tuple(int(x) for x in rgb_input.split(",")) if rgb_input else (255, 255, 255)
+    except:
+        print("Invalid value. RGB set to 255,255,255")
+        rgb = (255, 255, 255)
+
+    nrtiles_input = input("Number of tiles (1-50) [default 50]: ").strip()
+    try:
+        nrtiles = int(nrtiles_input) if nrtiles_input else 50
+    except:
+        print("Invalid value. Number of tiles set to 50")
+        nrtiles = 50
+
+    tileSize_input = input("Size of tiles in px (1-20) [default 7]: ").strip()
+    try:
+        tileSize = int(tileSize_input) if tileSize_input else 7
+    except:
+        print("Invalid value. Tile size set to 7")
+        tileSize = 7
+
+    borderWidth_input = input("Borderwidth (0-15) [default 0]: ").strip()
+    try:
+        borderWidth = int(borderWidth_input) if borderWidth_input else 0
+    except:
+        print("Invalid value. Border width set to 0")
+        borderWidth = 0
+    print(APIS.get_noise_img(rgb, nrtiles, tileSize, borderWidth))
+
+def minecraft():
+    username = input("Enter username: ")
+    skinpart = input("Enter part of skin: ")
+    print(APIS.get_minecraft_skin(username, skinpart))
+
+def f2p():
+    option = input("Enter option (all (default), random, game_id, category, platform): ").strip()
+    option = option if option else "all"
+    get_all = False
+    get_random = False
+    game_id = None
+    category = ""
+    platform = ""
+    if option == "all" or option == "category" or option == "platform":
+        if option == "all":
+            get_all = True
+        elif option == "category":
+            category = input("Enter category (default shooter): ")
+            category = category if category else "shooter"
+        elif option == "platform":
+            platform = input("Enter platform (default pc): ")
+            platform = platform if platform else "pc"
+        data = APIS.get_f2p_games(get_all=get_all, category=category, platform=platform)
+        try:
+            for game in data:
+                print(game)
+        except:
+            print(data)
+    else:
+        if option == "random":
+            get_random = True
+        elif option == "game_id":
+            game_id = int(input("Enter game id (default 1): "))
+            game_id = game_id if game_id else 1
+        print(APIS.get_f2p_games(get_random=get_random, game_id=game_id))
+
+apis = ["error", "ip", "random user", "dog", "fox", "noise", "robot", "minecraft", "f2p", "qr"]
 
 def main():
     while True:
@@ -237,12 +344,7 @@ def main():
             print(APIS.get_ip())
 
         elif api == "random user":
-            data = APIS.get_random_user()
-            print(data["Gender"])
-            print(data["Name"])
-            print(data["Date of birth"])
-            print(data["Age"])
-            print(data["Location"])
+            random_user()
 
         elif api == "dog":
             print(APIS.get_dog_img())
@@ -251,19 +353,7 @@ def main():
             print(APIS.get_fox_img())
 
         elif api == "noise":
-            print("Leave any value empty for default")
-            rgb_input = input("RGB (e.g., 255,128,0) [default 255,255,255]: ").strip()
-            rgb = tuple(int(x) for x in rgb_input.split(",")) if rgb_input else (255, 255, 255)
-
-            nrtiles_input = input("Number of tiles (1-50) [default 50]: ").strip()
-            nrtiles = int(nrtiles_input) if nrtiles_input else 50
-
-            tileSize_input = input("Size of tiles in px (1-20) [default 7]: ").strip()
-            tileSize = int(tileSize_input) if tileSize_input else 7
-
-            borderWidth_input = input("Borderwidth (0-15) [default 0]: ").strip()
-            borderWidth = int(borderWidth_input) if borderWidth_input else 0
-            print(APIS.get_noise_img(rgb, nrtiles, tileSize, borderWidth))
+            noise()
 
         elif api == "robot":
             print(APIS.get_robot_img(input("Enter prompt: ")))
@@ -272,40 +362,13 @@ def main():
             print(APIS.get_amiibo_data(input("Enter Amiibo name: ")))
 
         elif api == "minecraft":
-            username = input("Enter username: ")
-            skinpart = input("Enter part of skin: ")
-            print(APIS.get_minecraft_skin(username, skinpart))
+            minecraft()
 
         elif api == "f2p":
-            option = input("Enter option (all (default), random, game_id, category, platform): ").strip()
-            option = option if option else "all"
-            get_all = False
-            get_random = False
-            game_id = None
-            category = ""
-            platform = ""
-            if option == "all" or option == "category" or option == "platform":
-                if option == "all":
-                    get_all = True
-                elif option == "category":
-                    category = input("Enter category (default shooter): ")
-                    category = category if category else "shooter"
-                elif option == "platform":
-                    platform = input("Enter platform (default pc): ")
-                    platform = platform if platform else "pc"
-                data = APIS.get_f2p_games(get_all=get_all, category=category, platform=platform)
-                try:
-                    for game in data:
-                        print(game)
-                except:
-                    print(data)
-            else:
-                if option == "random":
-                    get_random = True
-                elif option == "game_id":
-                    game_id = int(input("Enter game id (default 1): "))
-                    game_id = game_id if game_id else 1
-                print(APIS.get_f2p_games(get_random=get_random, game_id=game_id))
+            f2p()
+
+        elif api == "qr":
+            print(APIS.get_qr("create", input("Enter QR code data: ")))
 
         elif api == "error":
             http_error_codes = [
@@ -318,7 +381,6 @@ def main():
                 500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511
             ]
             get_cat_err_img(str(choice(http_error_codes)))
-            break
 
         else:
             print("Invalid API")
