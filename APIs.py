@@ -15,17 +15,6 @@ def get_cat_err_img(errcode):
 
 class APIS():
     @staticmethod
-    def test():
-        url = f""
-        r = requests.get(url)
-        if r.status_code == 200:
-            data = r.json()
-            return (f"Data: {data}")
-        else:
-            get_cat_err_img(r.status_code)
-            return r.status_code
-
-    @staticmethod
     def get_ip():
         """
         Returns current IP address
@@ -386,3 +375,4 @@ def main():
             print("Invalid API")
 
 main()
+
