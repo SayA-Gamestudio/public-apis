@@ -225,7 +225,7 @@ class APIS:
             return get_cat_err_img(r.status_code)
     
     @staticmethod
-    def get_f2p_games(get_all: bool = False, get_random: bool = False, game_id: int = None, category: str = "", platform: str = ""):
+    def get_f2p_games(get_all: bool = False, get_random: bool = False, game_id = None, category: str = "", platform: str = ""):
         categories = [
             "mmorpg", "shooter", "strategy", "moba", "racing",
             "sports", "social", "sandbox", "open-world", "survival",
@@ -366,14 +366,53 @@ class APIS:
         r = requests.get(url)
         if r.status_code == 200:
             return r.json()["activity"]
+        
+    @staticmethod
+    def translate(text, source, target):
+        # Example endpoint; you’d need a working public instance:
+        url = "https://apertium.org/apy/translate"
+
+        params = {
+            "q": text,
+            "langpair": f"{source}|{target}"
+        }
+
+        r = requests.get(url, params=params)
+
+        if r.status_code == 200:
+            data = r.json()
+            translation = data["responseData"]["translatedText"]
+            return translation
+        else:
+            return get_cat_err_img(r.status_code)
+        
+    @staticmethod
+    def sudoku():
+        # Example endpoint; you’d need a working public instance:
+        url = "https://sudoku.freeapi.me/"
+        r = requests.get(url)
+
+        if r.status_code == 200:
+            data = r.json()
+            r2 = requests.get(data["puzzle_url"])
+            if r.status_code == 200:
+                data = r2.content
+                return show_image(data)
+            else:
+                return get_cat_err_img(r2.status_code)
+        else:
+            return get_cat_err_img(r.status_code)
     
 def random_user():
     data = APIS.get_random_user()
-    print(data["Gender"])
-    print(data["Name"])
-    print(data["Date of birth"])
-    print(data["Age"])
-    print(data["Location"])
+    if isinstance(data, dict):
+        print("Gender: " + data["Gender"])
+        print("Name: " + data["Name"])
+        print("Date of birth: " + data["Date of birth"])
+        print("Age: " + data["Age"])
+        print("Location: " + data["Location"])
+    else:
+        print(data)
 
 def noise():
     print("Leave any value empty for default")
@@ -449,17 +488,23 @@ def f2p():
             game_id = int(game_id) if game_id else 1
         print(APIS.get_f2p_games(get_random=get_random, game_id=game_id))
 
-apis = ["error", "ip", "random user", "dog", "fox", "noise", "robot", "minecraft", "f2p", "qr", "pokemon", "advice", "bored"]
+def translate():
+    text = cinput("Enter text: ").lower()
+    source = cinput("Enter source language: ").lower()
+    target = cinput("Enter target language: ").lower()
+    if target == "random":
+        pass
+    print(APIS.translate(text, source, target))
+
+apis = ["error", "ip", "random user", "dog", "fox", "noise", "robot", "minecraft", "f2p", "qr", "pokemon", "advice", "bored",\
+        "translate", "sudoku"]
 
 def main():
     api = cinput(f"\nChoose API ({", ".join(apis)}): ")
 
-    if api == "quit":
+    if api == "quit" or api == "break":
         print("\n\033[0;32mThank you for using APIs by SayA\033[0m\n")
         return False
-
-    if api == "test":
-        print(APIS.test())
 
     elif api == "get ip" or api == "ip":
         print(APIS.get_ip())
@@ -497,6 +542,12 @@ def main():
     elif api == "bored":
         print(APIS.get_bored())
 
+    elif api == "translate":
+        translate()
+
+    elif api == "sudoku":
+        print(APIS.sudoku())
+
     elif api == "error":
         http_error_codes = [
             # 4xx Client Errors
@@ -507,7 +558,7 @@ def main():
             # 5xx Server Errors
             500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511
         ]
-        print(get_cat_err_img(str(choice(http_error_codes))))
+        print(get_cat_err_img(choice(http_error_codes)))
 
     else:
         print("Invalid API")
