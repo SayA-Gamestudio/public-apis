@@ -1,6 +1,6 @@
 # Public APIs
 
-Public APIs are parts of other programs that can be used by anyone for free.
+Public APIs are parts of other programs that can be used by anyone for free (usually).
 
 ## Installation
 
@@ -18,4 +18,5 @@ Run the python file, and enter the queries to use the free APIs.
 
 
 [MIT](https://choosealicense.com/licenses/mit/)
+
 
