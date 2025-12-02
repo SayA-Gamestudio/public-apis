@@ -93,7 +93,6 @@ class APIS:
         r = requests.get(url)
         if r.status_code == 200:
             data = r.json()
-            print(data)
             country = data["country"]
             city = data["city"]
             zipcode = data["zip"]
@@ -102,7 +101,7 @@ class APIS:
             organisation = data["org"]
 
 
-            return (f"Your IP address is {ip}.\nExtra info:\nLocation: {city}, {country} with ZIP-code {zipcode}.\nCoordinates: {lat}, {lon}.\nThe internet is owned by {organisation}")
+            return (f"Your IP address is {ip}.\nExtra info:\nLocation: {city}, {country} with ZIP-code {zipcode}.\nCoordinates: {lat}, {lon}.\nThe WiFi is owned by {organisation}")
         else:
             return get_cat_err_img(r.status_code)
 
@@ -403,16 +402,33 @@ class APIS:
         else:
             return get_cat_err_img(r.status_code)
     
+def error():
+    http_error_codes = [
+        # 4xx Client Errors
+        400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410,
+        411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
+        424, 425, 426, 428, 429, 431, 451,
+
+        # 5xx Server Errors
+        500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511
+    ]
+    return (get_cat_err_img(choice(http_error_codes)))
+
+def ip():
+    return APIS.get_ip()
+
 def random_user():
     data = APIS.get_random_user()
     if isinstance(data, dict):
-        print("Gender: " + data["Gender"])
-        print("Name: " + data["Name"])
-        print("Date of birth: " + data["Date of birth"])
-        print("Age: " + data["Age"])
-        print("Location: " + data["Location"])
+        return f"Gender: {data["Gender"]}\nName: {data["Name"]}\nDate of birth: {data["Date of birth"]}\nAge: {data["Age"]}\nLocation: {data["Location"]}"
     else:
-        print(data)
+        return data
+
+def dog():
+    return APIS.get_dog_img()
+
+def fox():
+    return APIS.get_fox_img()
 
 def noise():
     print("Leave any value empty for default")
@@ -443,7 +459,10 @@ def noise():
     except:
         print("Invalid value. Border width set to 0")
         borderWidth = 0
-    print(APIS.get_noise_img(rgb, nrtiles, tileSize, borderWidth))
+    return (APIS.get_noise_img(rgb, nrtiles, tileSize, borderWidth))
+
+def robot():
+    return APIS.get_robot_img(cinput("Enter prompt: "))
 
 def minecraft():
     skinblock = cinput("Skin or block: ")
@@ -452,10 +471,10 @@ def minecraft():
         skinpart = cinput("Enter part of skin: ")
         overlay = cinput("With overlay (y/n): ")
         overlay = overlay == "y"
-        print(APIS.get_minecraft_skin(username, skinpart, overlay))
+        return (APIS.get_minecraft_skin(username, skinpart, overlay))
     elif skinblock == "block":
         block = cinput("Enter block: ")
-        print(APIS.get_minecraft_block(block))
+        return (APIS.get_minecraft_block(block))
 
 def f2p():
     option = cinput("Enter option (all (default), random, id, category, platform): ")
@@ -476,17 +495,31 @@ def f2p():
             platform = platform if platform else "pc"
         data = APIS.get_f2p_games(get_all=get_all, category=category, platform=platform)
         try:
+            games = []
             for game in data:
-                print(game)
+                games.append(game)
+            return games
         except:
-            print(data)
+            return data
     else:
         if option == "random":
             get_random = True
         elif option == "id":
             game_id = cinput("Enter game id (default 1): ")
             game_id = int(game_id) if game_id else 1
-        print(APIS.get_f2p_games(get_random=get_random, game_id=game_id))
+        return APIS.get_f2p_games(get_random=get_random, game_id=game_id)
+
+def qr():
+    return APIS.get_qr("create", cinput("Enter QR code data: "))
+
+def pokemon():
+    return APIS.get_pokemon(cinput("Enter Pokemon name (default Pikachu): "))
+
+def advice():
+    return APIS.get_advice()
+
+def bored():
+    return APIS.get_bored()
 
 def translate():
     text = cinput("Enter text: ").lower()
@@ -494,7 +527,10 @@ def translate():
     target = cinput("Enter target language: ").lower()
     if target == "random":
         pass
-    print(APIS.translate(text, source, target))
+    return (APIS.translate(text, source, target))
+
+def sudoku():
+    return APIS.sudoku()
 
 apis = ["error", "ip", "random user", "dog", "fox", "noise", "robot", "minecraft", "f2p", "qr", "pokemon", "advice", "bored",\
         "translate", "sudoku"]
@@ -507,58 +543,49 @@ def main():
         return False
 
     elif api == "get ip" or api == "ip":
-        print(APIS.get_ip())
+        print(ip())
 
     elif api == "random user":
-        random_user()
+        print(random_user())
 
     elif api == "dog":
-        print(APIS.get_dog_img())
+        print(dog())
 
     elif api == "fox":
-        print(APIS.get_fox_img())
+        print(fox())
 
     elif api == "noise":
-        noise()
+        print(noise())
 
     elif api == "robot":
-        print(APIS.get_robot_img(cinput("Enter prompt: ")))
+        print(robot())
 
     elif api == "minecraft":
-        minecraft()
+        print(minecraft())
 
     elif api == "f2p":
-        f2p()
+        print(f2p())
 
     elif api == "qr":
-        print(APIS.get_qr("create", cinput("Enter QR code data: ")))
+        print(qr())
 
     elif api == "pokemon":
-        print(APIS.get_pokemon(cinput("Enter Pokemon name (default Pikachu): ")))
+        print(pokemon())
 
     elif api == "advice":
-        print(APIS.get_advice())
+        print(advice())
 
     elif api == "bored":
-        print(APIS.get_bored())
+        print(bored())
 
     elif api == "translate":
-        translate()
+        print(translate())
 
     elif api == "sudoku":
-        print(APIS.sudoku())
+        print(sudoku())
 
     elif api == "error":
-        http_error_codes = [
-            # 4xx Client Errors
-            400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410,
-            411, 412, 413, 414, 415, 416, 417, 418, 421, 422, 423,
-            424, 425, 426, 428, 429, 431, 451,
-
-            # 5xx Server Errors
-            500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511
-        ]
-        print(get_cat_err_img(choice(http_error_codes)))
+        print(error())
 
     else:
         print("Invalid API")
