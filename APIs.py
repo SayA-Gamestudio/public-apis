@@ -1,9 +1,10 @@
 try:
-    from random import choice
-    import requests
+    from random import choice, randint
+    import requests, os, sys
     from PIL import Image
     from io import BytesIO
-    import os, sys
+    from string import printable
+    import webbrowser
 except Exception as e:
     print(f"1 or more modules not found\nInstall the module using 'pip install [module]'\n{e}")
 
@@ -24,6 +25,7 @@ def play_audio(content):
 def show_image(content):
     img = Image.open(BytesIO(content))
     img.show()
+    return "Showing image"
 
 def get_cat_err_img(errcode: int):
     url = f"https://http.cat/{errcode}"
@@ -35,35 +37,39 @@ def get_cat_err_img(errcode: int):
 def cinput(prompt):
     """Custom input"""
     data = input(prompt).strip().lower()
+    data = ''.join(char for char in data if char in printable)
     return data
+
+def cprint(*values: object, sep: str | None = " ", end: str | None = "\n") -> None:
+    print(*values, sep, end)
 
 def preview_list(lst):
     """Preview a list for the user, showing index and brief description."""
     for i, item in enumerate(lst[:10]):  # show only first 10 for readability
         if isinstance(item, dict):
             keys = ", ".join(item.keys())
-            print(f"{i}: dict with keys [{keys}]")
+            cprint(f"{i}: dict with keys [{keys}]")
         elif isinstance(item, list):
-            print(f"{i}: list of length {len(item)}")
+            cprint(f"{i}: list of length {len(item)}")
         else:
-            print(f"{i}: {item}")
+            cprint(f"{i}: {item}")
     if len(lst) > 10:
-        print(f"...and {len(lst)-10} more items")
+        cprint(f"...and {len(lst)-10} more items")
 
 def drill(data, path="root"):
     """Recursively let the user select keys/items from dicts or lists."""
     while isinstance(data, (dict, list)):
         if isinstance(data, dict):
             keys = list(data.keys())
-            print(f"\nCurrent path: {path}")
+            cprint(f"\nCurrent path: {path}")
             choice = cinput(f"Choose a key ({', '.join(keys)}): ")
             if choice not in data:
-                print("Invalid key. Try again.")
+                cprint("Invalid key. Try again.")
                 continue
             data = data[choice]
             path += f"->{choice}"
         elif isinstance(data, list):
-            print(f"\nCurrent path: {path}")
+            cprint(f"\nCurrent path: {path}")
             preview_list(data)
             idx = cinput(f"Choose an index (0-{len(data)-1}): ")
             try:
@@ -71,7 +77,7 @@ def drill(data, path="root"):
                 data = data[idx]
                 path += f"[{idx}]"
             except (ValueError, IndexError):
-                print("Invalid index. Try again.")
+                cprint("Invalid index. Try again.")
                 continue
     return data
 
@@ -127,7 +133,7 @@ class APIS:
                 "Age" : f"{results["registered"]["age"]}",
                 "Location" : f"{results["location"]["city"]}, {results["location"]["country"]}"
             }
-            #print(results) print for full API response
+            #cprint(results) print for full API response
         else:
             return get_cat_err_img(r.status_code)
     
@@ -367,7 +373,7 @@ class APIS:
             return r.json()["activity"]
         
     @staticmethod
-    def translate(text, source, target):
+    def translate(text: str, source: str, target: str) -> str:
         # Example endpoint; you’d need a working public instance:
         url = "https://apertium.org/apy/translate"
 
@@ -387,7 +393,6 @@ class APIS:
         
     @staticmethod
     def sudoku():
-        # Example endpoint; you’d need a working public instance:
         url = "https://sudoku.freeapi.me/"
         r = requests.get(url)
 
@@ -402,7 +407,154 @@ class APIS:
         else:
             return get_cat_err_img(r.status_code)
     
-def error():
+    @staticmethod
+    def get_cat(typecat):
+        baseurl = "https://cataas.com"
+
+        if typecat not in ["normal", "say"]:
+            return
+
+        if typecat == "normal":
+            url = baseurl + "/cat"
+        elif typecat == "say":
+            to_say = cinput("What does the cat say: ")
+            url = baseurl + "/cat/says/" + to_say
+
+        r = requests.get(url)
+
+        if r.status_code == 200:
+            data = r.content
+            return show_image(data)
+        else:
+            return get_cat_err_img(r.status_code)
+        
+    @staticmethod
+    def get_duck():
+        url = "https://random-d.uk/api/v2/quack"
+        r = requests.get(url)
+
+        if r.status_code == 200:
+            data = r.json()
+            link = data["url"]
+            r2 = requests.get(link)
+            if r2.status_code == 200:
+                data2 = r2.content
+                return show_image(data2)
+            else:
+                return get_cat_err_img(r2.status_code)
+        else:
+            return get_cat_err_img(r.status_code)
+        
+    @staticmethod
+    def get_bear(width, height):
+        url = f"https://placebear.com/{width}/{height}"
+        r = requests.get(url)
+
+        if r.status_code == 200:
+            data = r.content
+            return show_image(data)
+        else:
+            return get_cat_err_img(r.status_code)
+        
+    @staticmethod
+    def get_bacon(width, height):
+        url = f"https://baconmockup.com/{width}/{height}"
+        r = requests.get(url)
+
+        if r.status_code == 200:
+            data = r.content
+            return show_image(data)
+        else:
+            return get_cat_err_img(r.status_code)
+        
+    @staticmethod
+    def get_chart(c):
+        exampleurl = "https://quickchart.io/chart?c={type:'bar',data:{labels:[2012,2013,2014,2015, 2016],datasets:[{label:'Users',data:[120,60,50,180,120]}]}}"
+
+        url = f"https://quickchart.io/chart?c={c}"
+
+        r = requests.get(url)
+
+        if r.status_code == 200:
+            data = r.content
+            return show_image(data)
+        else:
+            return get_cat_err_img(r.status_code)
+        
+    @staticmethod
+    def get_meme(idx):
+        url = "https://api.imgflip.com/get_memes"
+
+        r = requests.get(url)
+
+        if r.status_code == 200:
+            imgurl = r.json()["data"]["memes"][idx]["url"]
+            r2 = requests.get(imgurl)
+            if r2.status_code == 200:
+                return show_image(r2.content)
+            else:
+                return get_cat_err_img(r2.status_code)
+        else:
+            return get_cat_err_img(r.status_code)
+        
+    @staticmethod
+    def get_useless_fact():
+        url = "https://uselessfacts.jsph.pl/api/v2/facts/random?language=en"
+
+        r = requests.get(url)
+        if r.status_code == 200:
+            data = r.json()["text"]
+            return data
+        else:
+            return get_cat_err_img(r.status_code)
+        
+    @staticmethod
+    def get_tech_phrase():
+        url = "https://techy-api.vercel.app/api/json"
+
+        r = requests.get(url)
+        if r.status_code == 200:
+            data = r.json()["message"]
+            return data
+        else:
+            return get_cat_err_img(r.status_code)
+        
+    @staticmethod
+    def get_radio(genre):
+        url = f"http://fi1.api.radio-browser.info/json/stations/byname/{genre}"
+
+        r = requests.get(url)
+        if r.status_code == 200:
+            data = r.json()
+            stations = [i for i in data]
+            urls = [i["url"] for i in stations]
+            radio_link = choice(urls)
+            open_in_browser = cinput("Open in browser? (y/n)")
+            open_in_browser = True if open_in_browser == "y" else False
+            if open_in_browser:
+                webbrowser.open_new_tab(radio_link)
+                return "Opened radio in webbrowser"
+            else:
+                return radio_link
+        else:
+            return get_cat_err_img(r.status_code)
+        
+    @staticmethod
+    def get_dadjoke():
+        url = "https://icanhazdadjoke.com/"
+        headers = {
+            "Accept": "application/json"
+        }
+
+        r = requests.get(url, headers=headers)
+        if r.status_code == 200:
+            data = r.json()["joke"]
+            return data
+        else:
+            return get_cat_err_img(r.status_code)
+
+    
+def errorcode():
     http_error_codes = [
         # 4xx Client Errors
         400, 401, 402, 403, 404, 405, 406, 407, 408, 409, 410,
@@ -412,7 +564,9 @@ def error():
         # 5xx Server Errors
         500, 501, 502, 503, 504, 505, 506, 507, 508, 510, 511
     ]
-    return (get_cat_err_img(choice(http_error_codes)))
+    code = choice(http_error_codes)
+    get_cat_err_img(code)
+    return f"Showing example error: {code}"
 
 def ip():
     return APIS.get_ip()
@@ -431,44 +585,32 @@ def fox():
     return APIS.get_fox_img()
 
 def noise():
-    print("Leave any value empty for default")
+    cprint("Leave any value empty for default")
     rgb_input = cinput("RGB (e.g., 255,128,0) [default 255,255,255]: ")
-    try:
-        rgb = tuple(int(x) for x in rgb_input.split(",")) if rgb_input else (255, 255, 255)
-    except:
-        print("Invalid value. RGB set to 255,255,255")
-        rgb = (255, 255, 255)
+    try: rgb = tuple(int(x) for x in rgb_input.split(",")) if rgb_input else (255, 255, 255)
+    except: rgb = (255, 255, 255)
 
     nrtiles_input = cinput("Number of tiles (1-50) [default 50]: ")
-    try:
-        nrtiles = int(nrtiles_input) if nrtiles_input else 50
-    except:
-        print("Invalid value. Number of tiles set to 50")
-        nrtiles = 50
+    try: nrtiles = int(nrtiles_input) if nrtiles_input else 50
+    except: nrtiles = 50
 
     tileSize_input = cinput("Size of tiles in px (1-20) [default 7]: ")
-    try:
-        tileSize = int(tileSize_input) if tileSize_input else 7
-    except:
-        print("Invalid value. Tile size set to 7")
-        tileSize = 7
+    try: tileSize = int(tileSize_input) if tileSize_input else 7
+    except: tileSize = 7
 
     borderWidth_input = cinput("Borderwidth (0-15) [default 0]: ")
-    try:
-        borderWidth = int(borderWidth_input) if borderWidth_input else 0
-    except:
-        print("Invalid value. Border width set to 0")
-        borderWidth = 0
+    try: borderWidth = int(borderWidth_input) if borderWidth_input else 0
+    except: borderWidth = 0
     return (APIS.get_noise_img(rgb, nrtiles, tileSize, borderWidth))
 
 def robot():
     return APIS.get_robot_img(cinput("Enter prompt: "))
 
 def minecraft():
-    skinblock = cinput("Skin or block: ")
+    skinblock = cinput("Enter 'skin' or 'block': ")
     if skinblock == "skin":
         username = cinput("Enter username: ")
-        skinpart = cinput("Enter part of skin: ")
+        skinpart = cinput("Enter part of skin (head, head3d, body, body3d): ")
         overlay = cinput("With overlay (y/n): ")
         overlay = overlay == "y"
         return (APIS.get_minecraft_skin(username, skinpart, overlay))
@@ -522,77 +664,141 @@ def bored():
     return APIS.get_bored()
 
 def translate():
-    text = cinput("Enter text: ").lower()
-    source = cinput("Enter source language: ").lower()
-    target = cinput("Enter target language: ").lower()
+    text = cinput("Enter text: ")
+    source = cinput("Enter source language (abbr.): ")
+    target = cinput("Enter target language (abbr.): ")
     if target == "random":
-        pass
+        r = requests.get('https://apertium.org/apy/listPairs')
+        if r.status_code == 200:
+            data = r.json()
+            data = data["responseData"]
+            langs = set()
+            for pair in data:
+                for lang in pair.values():
+                    langs.add(lang)
+            target = choice(list(langs))
+        else:
+            target = "en"
+            get_cat_err_img(r.status_code)
     return (APIS.translate(text, source, target))
 
 def sudoku():
     return APIS.sudoku()
 
-apis = ["error", "ip", "random user", "dog", "fox", "noise", "robot", "minecraft", "f2p", "qr", "pokemon", "advice", "bored",\
-        "translate", "sudoku"]
+def cat():
+    typecat = cinput("Type of image (normal, say): ")
+    return APIS.get_cat(typecat)
+
+def duck():
+    return APIS.get_duck()
+
+def bear():
+    width = cinput("Enter width: ")
+    try: width = int(width)
+    except: width = randint(0, 1000)
+    height = cinput("Enter height: ")
+    try: height = int(height)
+    except: height = randint(0, 1000)
+    return APIS.get_bear(width, height)
+
+def bacon():
+    width = cinput("Enter width: ")
+    try: width = int(width)
+    except: width = randint(0, 1000)
+    height = cinput("Enter height: ")
+    try: height = int(height)
+    except: height = randint(0, 1000)
+    return APIS.get_bacon(width, height)
+
+def chart():
+    charttype = cinput("Enter charttype (bar, line pie): ")
+    charttype = charttype if charttype in ["bar", "line", "pie"] else "bar"
+    labels = cinput("Enter section labels, seperated by a comma: ").split(",")
+    datasets = []
+    while True:
+        label = cinput("Enter label for data (break to stop): ")
+        if label == "break":
+            break
+        data = cinput(f"Enter data for {label}, seperated by a comma ({len(labels)} values): ").split(",")
+        datasets.append({"label":label,"data":data})
+    chartdata = {
+        "type":charttype,
+        "data":{
+            "labels":labels,
+            "datasets":datasets
+            }
+        }
+    return APIS.get_chart(chartdata)
+
+def meme():
+    idx = cinput("Enter index (0-100): ")
+    try: idx = int(idx)
+    except: idx = randint(0, 100)
+    idx = idx if (idx >= 0 and idx <= 100) else randint(0, 100)
+    return APIS.get_meme(idx)
+
+def useless_fact():
+    return APIS.get_useless_fact()
+
+def tech_phrase():
+    return APIS.get_tech_phrase()
+
+def radio():
+    genre = cinput("Enter music genre: ")
+    return APIS.get_radio(genre)
+
+def dadjoke():
+    return APIS.get_dadjoke()
+
+apis:dict = {
+            # Image output
+            "dog": dog,
+            "fox": fox,
+            "cat": cat,
+            "duck": duck,
+            "bear": bear,
+
+            "errorcode": errorcode,
+            "bacon": bacon,
+            "noise": noise,
+            "robot": robot,
+            "minecraft": minecraft,
+            "qr": qr,
+            "sudoku": sudoku,
+            "chart": chart,
+
+            # Text output
+            "ip": ip,
+            "random user": random_user,
+
+            "f2p": f2p,
+            "pokemon": pokemon,
+            "advice": advice,
+            "bored": bored,
+            "translate": translate,
+            "meme": meme,
+            "useless fact": useless_fact,
+            "tech phrase": tech_phrase,
+            "radio": radio,
+            "dadjoke": dadjoke
+        }
 
 def main():
-    api = cinput(f"\nChoose API ({", ".join(apis)}): ")
+    api = cinput(f"\nChoose API ({", ".join(apis.keys())}): ")
 
     if api == "quit" or api == "break":
         print("\n\033[0;32mThank you for using APIs by SayA\033[0m\n")
         return False
-
-    elif api == "get ip" or api == "ip":
-        print(ip())
-
-    elif api == "random user":
-        print(random_user())
-
-    elif api == "dog":
-        print(dog())
-
-    elif api == "fox":
-        print(fox())
-
-    elif api == "noise":
-        print(noise())
-
-    elif api == "robot":
-        print(robot())
-
-    elif api == "minecraft":
-        print(minecraft())
-
-    elif api == "f2p":
-        print(f2p())
-
-    elif api == "qr":
-        print(qr())
-
-    elif api == "pokemon":
-        print(pokemon())
-
-    elif api == "advice":
-        print(advice())
-
-    elif api == "bored":
-        print(bored())
-
-    elif api == "translate":
-        print(translate())
-
-    elif api == "sudoku":
-        print(sudoku())
-
-    elif api == "error":
-        print(error())
-
-    else:
+    
+    if api not in apis.keys():
         print("Invalid API")
+
+    print(apis[api]())
 
     return True
 
 if __name__ == "__main__":
+    print("Enter 'break' or 'quit' to stop")
     while True:
         if not main():
             break
