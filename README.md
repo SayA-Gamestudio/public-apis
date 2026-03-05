@@ -14,9 +14,5 @@ git clone https://github.com/SayA-Gamestudio/public-apis.git
 #### Make sure you have Python 3.x installed
 Run the python file, and enter the queries to use the free APIs.
 
-## License
-
-
-[MIT](https://choosealicense.com/licenses/mit/)
 
 
